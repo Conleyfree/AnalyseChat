@@ -3,7 +3,7 @@
 
 from nltk.tokenize import RegexpTokenizer           # 引入 nltk 的 分词模块
 from stop_words import get_stop_words               # 引入 stopwords 里面的分词模块
-from nltk.stem.porter import PorterStemmer          # 引入 PorterStemmer 模块作词干提取
+from nltk.stem import WordNetLemmatizer             # 引入 nltk 的 词还原模块
 from gensim import corpora, models, similarities
 import matplotlib.pyplot as plt                     # 引入 pyplot，并将其别名为plt，为作图使用
 
@@ -17,6 +17,7 @@ class LDA_module:
     __train_set_corpus = []       # 训练集词频
     __tfidf_model = []            # TF-IDF 模型
     __ldamodel = []               # 对应产生的 LDA 模型
+    my_stoplist = []              # 增加特定应用的停用词表（本应用侧重医患对话）
 
     def __init__(self, doc_set, num_topics, num_words, num_traversals):
         print("初始化 ... ")
@@ -24,32 +25,29 @@ class LDA_module:
         self.num_topics = num_topics
         self.num_words = num_words
         self.num_traversals = num_traversals
+        f = open("G:\PyCharmWorkSpace/mystopword.txt", "r")
+        content = f.readlines()                                 # 读取文本内容
+        self.my_stoplist = set(content[0].split())              # 读取一行
 
     def trainmodel(self):
         print("开始训练 LDA 模型 ... ")
-        # 匹配所有单字字符，直到其遇到像空格这样的非单字的字符，就划分出一个词
-        tokenizer = RegexpTokenizer(r'\w+')
 
-        # create English stop words list
-        en_stop = get_stop_words('en')
+        tokenizer = RegexpTokenizer(r'\w+')                     # 创建一个去除标点符号等特殊字符的正则表达式分词器
+        wnl = WordNetLemmatizer()                               # 创建 WordNetLemmatizer 用来做词还原
+        en_stop = get_stop_words('en')                          # create English stop words list
 
-        # Create p_stemmer of class PorterStemmer
-        p_stemmer = PorterStemmer()
-
-        # list for tokenized documents in loop
         texts = []
-
-        # loop through document list
-        for i in self.doc_set:
+        for i in self.doc_set:                                  # 对训练集做遍历
             # clean and tokenize document string
             raw = i.lower()
-            tokens = tokenizer.tokenize(raw)
+            tokens = tokenizer.tokenize(raw)                    # 分词
 
             # remove stop words from tokens
-            stopped_tokens = [i for i in tokens if not i in en_stop]
+            stopped_tokens1 = [i for i in tokens if not i in en_stop]                       # 移去常见的停用词
+            stopped_tokens2 = [i for i in stopped_tokens1 if not i in self.my_stoplist]     # 移去针对应用设置的停用词
 
             # stem tokens
-            stemmed_tokens = [p_stemmer.stem(i) for i in stopped_tokens]
+            stemmed_tokens = [wnl.lemmatize(i) for i in stopped_tokens2]
 
             # add tokens to list
             texts.append(stemmed_tokens)
@@ -86,7 +84,7 @@ class LDA_module:
         print("开始预测 ... ")
         tokenizer = RegexpTokenizer(r'\w+')
         en_stop = get_stop_words('en')
-        p_stemmer = PorterStemmer()
+        wnl = WordNetLemmatizer()
 
         # print(self.ldamodel.print_topics(num_topics=2, num_words=3))
 
@@ -103,8 +101,9 @@ class LDA_module:
             # 提取词频向量
             raw = i.lower()
             tokens = tokenizer.tokenize(raw)
-            stopped_tokens = [i for i in tokens if not i in en_stop]
-            stemmed_tokens = [p_stemmer.stem(i) for i in stopped_tokens]
+            stopped_tokens1 = [i for i in tokens if not i in en_stop]
+            stopped_tokens2 = [i for i in stopped_tokens1 if not i in self.my_stoplist]
+            stemmed_tokens = [wnl.lemmatize(i) for i in stopped_tokens2]
 
             i_bow = self.__train_set_dict.doc2bow(stemmed_tokens)       # 把文档转换为稀疏矩阵
             print("    文档转换为稀疏矩阵：")

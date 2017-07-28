@@ -16,17 +16,20 @@
       <w>ignorechars</w>
       <w>ldamodel</w>
       <w>ldamodule</w>
+      <w>lemmatizer</w>
       <w>lsamodel</w>
       <w>lsamodule</w>
       <w>lsimodel</w>
       <w>matplotlib</w>
       <w>mylsa</w>
+      <w>mystopword</w>
       <w>nltk</w>
       <w>outtab</w>
       <w>pyplot</w>
       <w>rootdir</w>
       <w>simi</w>
       <w>stemmer</w>
+      <w>stoplist</w>
       <w>stopword</w>
       <w>tfidf</w>
       <w>tokenized</w>
@@ -34,6 +37,7 @@
       <w>trantab</w>
       <w>vdemention</w>
       <w>wdict</w>
+      <w>wordnet</w>
       <w>xmax</w>
       <w>xmin</w>
       <w>ymax</w>
