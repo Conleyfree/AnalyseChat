@@ -3,5 +3,6 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/predict_set/1. 看牙医.txt" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/predict_set/6. 急性阑尾炎.txt" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/train_set/6. 急性阑尾炎.txt" charset="GBK" />
   </component>
 </project>
