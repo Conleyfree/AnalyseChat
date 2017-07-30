@@ -1,6 +1,5 @@
 # coding=utf-8
 # created by czc on 2017.7.4
-import re
 
 from nltk.tokenize import RegexpTokenizer           # 引入 nltk 的 分词模块
 from nltk.stem import WordNetLemmatizer             # 引入 nltk 的 词还原模块
@@ -30,7 +29,7 @@ class LDA_module:
         content = f.readlines()                                 # 读取文本内容
         self.my_stoplist = set(content[0].split())              # 读取一行
         f = open("G:\PyCharmWorkSpace/stopword_en.txt", "r")
-        content = f.readlines()  # 读取文本内容
+        content = f.readlines()                                 # 读取文本内容
         for line in content:
             self.en_stop.append(line.split()[0])
 
@@ -50,7 +49,7 @@ class LDA_module:
             for seg in tokens:                                  # 提出停用词
                 if seg not in self.en_stop:
                     if seg not in self.my_stoplist:
-                        if not re.match(r"d+$", seg):                           # 去掉纯数字
+                        if not seg.isdigit():                   # 去掉纯数字
                             stopped_tokens.append(seg)
             stemmed_tokens = [wnl.lemmatize(i) for i in stopped_tokens]         # 词还原
 
@@ -67,16 +66,16 @@ class LDA_module:
         corpus = [dictionary.doc2bow(text) for text in texts]
         self.__train_set_corpus = corpus
 
-        tfidf = models.TfidfModel(corpus)       # 训练出 TF-IDF 模型
+        tfidf = models.TfidfModel(corpus)         # 训练出 TF-IDF 模型
         self.__tfidf_model = tfidf
-        corpus_tfidf = tfidf[corpus]            # 基于 TF-IDF 模型得到一个用tf-idf值表示的文档向量
+        # corpus_tfidf = tfidf[corpus]            # 基于 TF-IDF 模型得到一个用tf-idf值表示的文档向量
 
-        # generate LDA model
+        # 训练生成 LDA 模型：（1）用tf-idf模型训练；（2）直接使用词袋训练
+        # ldamodel = models.ldamodel.LdaModel(corpus_tfidf, num_topics=self.num_topics, id2word=dictionary, passes=self.num_traversals)
         ldamodel = models.ldamodel.LdaModel(corpus, num_topics=self.num_topics, id2word=dictionary, passes=self.num_traversals)
         self.__ldamodel = ldamodel
         print("训练完成，主题模型：")
         print(ldamodel.print_topics(num_topics=self.num_topics, num_words=self.num_words))
-        # print(ldamodel.print_topics(2))
 
     @staticmethod
     def show2dCorpora(corpus):
@@ -109,7 +108,7 @@ class LDA_module:
             for seg in tokens:  # 提出停用词
                 if seg not in self.en_stop:
                     if seg not in self.my_stoplist:
-                        if not re.match(r"d+$", seg):                   # 去掉纯数字
+                        if not seg.isdigit():                           # 去掉纯数字
                             stopped_tokens.append(seg)
             stemmed_tokens = [wnl.lemmatize(i) for i in stopped_tokens]
             print(count, ". 原文档：", stemmed_tokens)
@@ -126,13 +125,13 @@ class LDA_module:
                 if vex[1] > maxs:
                     maxs = vex[1]
                     index_ofMax = vex[0]
-            print("    文档主题为：", self.__ldamodel.print_topic(index_ofMax, topn=4))
+            print("    文档主题为：", self.__ldamodel.print_topic(index_ofMax, topn=self.num_words))
 
             test_simi = corpus_simi_matrix[i_lda]                       # 计算余弦相似度（与训练集所有文档的相似度）
             print("    计算待测文档与各训练的余弦相似度：")
             print("   ", list(enumerate(test_simi)))
 
-            count += 1
+            count += 1          # 文档计数
 
 
 class sample:
